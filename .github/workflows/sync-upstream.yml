@@ -32,6 +32,8 @@ jobs:
           git clone --quiet \
             "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" work
           cd work
+          git config user.name "fork-sync[bot]"
+          git config user.email "fork-sync@users.noreply.github.com"
 
           git remote add upstream "https://github.com/${UPSTREAM}.git"
           git fetch --quiet --prune upstream '+refs/heads/*:refs/remotes/upstream/*'
