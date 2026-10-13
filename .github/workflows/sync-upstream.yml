@@ -46,9 +46,11 @@ jobs:
             exit 0
           fi
 
+          # [skip ci] stops upstream's own CI workflows from firing on this
+          # mirror push (they fail here: a fork has no secrets/runners).
           git -c user.name="fork-sync[bot]" \
               -c user.email="fork-sync@users.noreply.github.com" \
-              merge --no-edit "${upstream}"
+              merge --no-edit -m "chore: sync with upstream ${upstream} [skip ci]" "${upstream}"
 
           after=$(git rev-parse HEAD)
           echo "merged ${before} + ${upstream} -> ${after}"
