@@ -52,6 +52,19 @@ jobs:
               -c user.email="fork-sync@users.noreply.github.com" \
               merge --no-edit -m "chore: sync with upstream ${upstream} [skip ci]" "${upstream}"
 
+          # The default GITHUB_TOKEN is an App token without the `workflows`
+          # permission, so it may not create OR update files under
+          # .github/workflows/ - and upstream edits its CI files often. Keep
+          # the fork's own copies (this workflow included) and drop any file
+          # upstream added there; everything else syncs normally.
+          git checkout "${before}" -- .github/workflows 2>/dev/null || true
+          git clean -fdq .github/workflows 2>/dev/null || true
+          git add -A .github/workflows
+          if ! git diff --cached --quiet; then
+            git commit --quiet --amend --no-edit
+            echo "kept the fork's own .github/workflows (App token may not push CI changes)"
+          fi
+
           after=$(git rev-parse HEAD)
           echo "merged ${before} + ${upstream} -> ${after}"
           git push --quiet origin main
