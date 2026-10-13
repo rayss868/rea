@@ -20,9 +20,7 @@ npx rea-agents setup
 Choose the agents to configure, review the proposed paths and changes, and
 approve the plan. npm's package-download approval and REA's setup approval are
 separate. Setup asks before changing agent configuration or installing Hopper.
-Restart the agents named in the completion message. Quit Claude Desktop fully
-before approving, because a running app can overwrite the registration; on
-Windows, see [where Claude Desktop reads its configuration](client-configuration.md#claude-desktop).
+Restart the agents named in the completion message.
 
 For the latest published release, use `npx rea-agents@latest setup`.
 [Package-runner and global-installation options](#package-runners-and-global-installation)
@@ -806,7 +804,7 @@ For a client that requires manual configuration, use:
   "mcpServers": {
     "rea": {
       "command": "npx",
-      "args": ["-y", "rea-agents@6.4.0", "mcp"]
+      "args": ["-y", "rea-agents@6.5.0", "mcp"]
     }
   }
 }
