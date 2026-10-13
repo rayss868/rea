@@ -1,0 +1,56 @@
+name: Sync fork with upstream
+
+# Keeps this fork up to date with morluto/rea: merges upstream/main into
+# main, so upstream changes arrive and this fork-only workflow survives.
+# Runs daily, and on demand from the Actions tab ("Run workflow").
+on:
+  schedule:
+    # 03:17 UTC daily - off the hour, when GitHub's scheduler is less busy
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: morluto/rea
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge upstream/main into this fork
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          git clone --quiet \
+            "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" work
+          cd work
+
+          git remote add upstream "https://github.com/${UPSTREAM}.git"
+          git fetch --quiet --prune upstream '+refs/heads/*:refs/remotes/upstream/*'
+
+          before=$(git rev-parse HEAD)
+          upstream=$(git rev-parse refs/remotes/upstream/main)
+          echo "fork main : ${before}"
+          echo "upstream  : ${upstream}"
+
+          if git merge-base --is-ancestor "${upstream}" HEAD; then
+            echo "already up to date - nothing to do"
+            exit 0
+          fi
+
+          git -c user.name="fork-sync[bot]" \
+              -c user.email="fork-sync@users.noreply.github.com" \
+              merge --no-edit "${upstream}"
+
+          after=$(git rev-parse HEAD)
+          echo "merged ${before} + ${upstream} -> ${after}"
+          git push --quiet origin main
+          echo "sync complete"
